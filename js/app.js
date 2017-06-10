@@ -19,13 +19,21 @@ $(document).ready(function() {
   var $addEmployeeBtn = $('#addEmployeeBtn');
   var $employeeTableBody = $('#employeeDataTableBody');
 
+  function makeEmployeeRow(name, role, startDate, monthlyRate) {
+    var $tableRow = $('<tr></tr>');
+    var $nameData = $('<td></td>').text(name);
+    var $roleData = $('<td></td>').text(role);
+    var $startDateData = $('<td></td>').text(startDate);
+    var $monthlyRateData = $('<td></td>').text(monthlyRate);
+
+    return $tableRow.append([$nameData, $roleData, $startDateData, $monthlyRateData]);
+  }
+
   // Attach listeners
   $addEmployeeBtn.on('click', function(e) {
-    console.log('hi, I ran');
     e.preventDefault();
 
     // get values from form fields
-
     var employeeName = $employeeName.val().trim();
     var role = $role.val().trim();
     var startDate = $startDate.val().trim();
@@ -39,7 +47,20 @@ $(document).ready(function() {
     });
   });
 
-  database.ref().on('child_added', function(snap, prevChildKey) {
-    // TODO
-  });
+  database.ref().on(
+    'child_added',
+    function(snap, prevChildKey) {
+      // retrieve values from snapshot
+      var name = snap.val().employeeName;
+      var role = snap.val().role;
+      var startDate = snap.val().startDate;
+      var monthlyRate = snap.val().monthlyRate;
+
+      // add new employee row
+      $employeeTableBody.prepend(makeEmployeeRow(name, role, startDate, monthlyRate));
+    },
+    function(errorObject) {
+      console.log('Error with database read:', errorObject);
+    }
+  );
 });
