@@ -18,15 +18,27 @@ $(document).ready(function() {
   var $monthlyRate = $('#monthlyRate');
   var $addEmployeeBtn = $('#addEmployeeBtn');
   var $employeeTableBody = $('#employeeDataTableBody');
+  var $hideForm = $('#hideForm');
 
-  function makeEmployeeRow(name, role, startDate, monthlyRate) {
+  $hideForm.on('click', function() {
+    $('#addEmployeeForm').slideToggle();
+    if ($hideForm.text().startsWith('Hide')) {
+      $hideForm.text('Show Form');
+    } else {
+      $hideForm.text('Hide Form');
+    }
+  });
+
+  function makeEmployeeRow(name, role, startDate, monthlyRate, months, totalComp) {
     var $tableRow = $('<tr></tr>');
     var $nameData = $('<td></td>').text(name);
     var $roleData = $('<td></td>').text(role);
     var $startDateData = $('<td></td>').text(startDate);
     var $monthlyRateData = $('<td></td>').text(monthlyRate);
+    var $months = $('<td></td>').text(months);
+    var $totalComp = $('<td></td>').text(`$${totalComp}`);
 
-    return $tableRow.append([$nameData, $roleData, $startDateData, $monthlyRateData]);
+    return $tableRow.append([$nameData, $roleData, $startDateData, $monthlyRateData, $months, $totalComp]);
   }
 
   // Attach listeners
@@ -37,8 +49,10 @@ $(document).ready(function() {
     var employeeName = $employeeName.val().trim();
     var role = $role.val().trim();
     var startDate = $startDate.val().trim();
+    console.log($startDate.val());
     var monthlyRate = $monthlyRate.val().trim();
 
+    // add values to database
     database.ref().push({
       employeeName: employeeName,
       role: role,
@@ -56,8 +70,12 @@ $(document).ready(function() {
       var startDate = snap.val().startDate;
       var monthlyRate = snap.val().monthlyRate;
 
+      var monthDiff = moment().diff(moment(startDate, 'YYYY-MM-DD'), 'months');
+
+      var totalComp = monthDiff * monthlyRate;
+
       // add new employee row
-      $employeeTableBody.prepend(makeEmployeeRow(name, role, startDate, monthlyRate));
+      $employeeTableBody.prepend(makeEmployeeRow(name, role, startDate, monthlyRate, monthDiff, totalComp));
     },
     function(errorObject) {
       console.log('Error with database read:', errorObject);
